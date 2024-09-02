@@ -111,18 +111,19 @@ qm create $VM_ID --name $VM_NAME \
     "$@" # pass remaining arguments -- https://stackoverflow.com/a/4824637/33244
 
 # Disk 0: EFI
-pvesm alloc local-zfs $VM_ID vm-$VM_ID-efi 1M
-qm set $VM_ID --efidisk0 local-zfs:vm-$VM_ID-efi
+pvesm alloc local $VM_ID vm-$VM_ID-efi.raw 1M
+qm set $VM_ID --efidisk0 /var/lib/vz/images/${VM_ID}/vm-$VM_ID-efi.raw
 
 # Disk 1: Main disk
-qm importdisk $VM_ID $VM_IMAGE local-zfs
-qm set $VM_ID --scsi1 local-zfs:vm-$VM_ID-disk-0,discard=on,iothread=1,ssd=1 \
+qm importdisk $VM_ID $VM_IMAGE local
+qm set $VM_ID --scsi1 /var/lib/vz/images/${VM_ID}/vm-$VM_ID-disk-0.raw,discard=on,iothread=1,ssd=1 \
     --boot c \
     --bootdisk scsi1
+
 qm resize $VM_ID scsi1 $VM_DISKSIZE
 
 # Disk 2: cloud-init
-qm set $VM_ID --ide2 local-zfs:cloudinit 
+qm set $VM_ID --ide2 local:cloudinit 
 
 
 
